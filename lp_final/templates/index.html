@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- Contenedor principal -->
+    <div class="container">
+
+        <!-- Sección izquierda con formularios -->
+        <div class="left-section">
+            <!-- Formulario Artista -->
+            <div class="artist-section" 
+                style="background-image: url('{{ url_for('static', filename='img/fondo_artis.jpg') }}');">
+                <h2>Ingresa un artista</h2>
+                <form id="artist-form">
+                    <input type="text" name="artist" placeholder="Nombre del artista" required>
+                    <button type="submit">Buscar</button>
+                </form>
+                <div id="artist-results" class="results"></div>
+            </div>
+
+            <!-- Formulario Género -->
+            <div class="genre-section" 
+                style="background-image: url('{{ url_for('static', filename='img/fondo_genero.jpg') }}');">
+                <h2>Ingresa tu género musical favorito</h2>
+                <form id="genre-form">
+                    <input type="text" name="genre" placeholder="Nombre del género" required>
+                    <button type="submit">Buscar</button>
+                </form>
+                <div id="genre-results" class="results"></div>
+            </div>
+        </div>
+
+        <!-- Sección derecha con álbumes más populares -->
+        <div class="right-section">
+            <h2>Top 10 Álbumes Más Populares</h2>
+            <div id="top-albums" class="albums-container">
+                <!-- Aquí se insertarán dinámicamente los álbumes -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script principal -->
+    <script>
+        // Función para obtener los álbumes más populares
+        fetch('/get_top_albums')
+        .then(response => response.json())
+        .then(data => {
+            const albumsContainer = document.getElementById('top-albums');
+            if (data.albums) {
+                data.albums.forEach(album => {
+                    const albumCard = `
+                        <div class="album-card">
+                            <img src="${album.cover_image}" alt="Portada del álbum">
+                            <h3>${album.name}</h3>
+                            <p>${album.artist}</p>
+                            <p>${album.release_date}</p>
+                            <a href="${album.album_url}" target="_blank">Escuchar</a>
+                        </div>
+                    `;
+                    albumsContainer.innerHTML += albumCard;
+                });
+            }
+        }).catch(error => console.error('Error al obtener álbumes:', error));
+
+        // Formulario Artista
+        document.getElementById('artist-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/search_artist', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('artist-results');
+                resultsDiv.innerHTML = `
+                    <p><strong>Biografía:</strong> ${data.biography || 'N/A'}</p>
+                    <p><strong>Oyentes:</strong> ${data.listeners || 'N/A'}</p>
+                    <p><strong>Top Canciones:</strong></p>
+                    <ul>${data.top_tracks?.map(track => `<li>${track}</li>`).join('') || 'N/A'}</ul>
+                    <p><strong>Álbum más famoso:</strong> ${data.top_album || 'N/A'}</p>
+                `;
+            }).catch(error => {
+                console.error('Error en búsqueda de artista:', error);
+            });
+        });
+
+        // Formulario Género
+        document.getElementById('genre-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/search_genre', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('genre-results');
+                if (data.tracks) {
+                    resultsDiv.innerHTML = `
+                        <p><strong>Top Canciones del Género:</strong></p>
+                        <ul>${data.tracks.map(track => `<li>${track}</li>`).join('')}</ul>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<p>${data.error || 'Error al obtener canciones.'}</p>`;
+                }
+            }).catch(error => {
+                console.error('Error en búsqueda de género:', error);
+            });
+        });
+    </script>
+</body>
+</html>
