@@ -23,27 +23,4 @@ def get_top_tracks_by_genre(genre_name):
         return {"error": str(e)}
     
     
-    
-    
-def get_top_albums():
-    try:
-        # Realizamos una búsqueda de álbumes populares en Spotify
-        results = sp.search(q='*', type='album', limit=50)
-        
-        if results['albums']['items']:
-            # Filtramos los 10 primeros álbumes
-            albums = []
-            for album in results['albums']['items'][:10]:
-                albums.append({
-                    "name": album['name'],
-                    "artist": album['artists'][0]['name'],
-                    "release_date": album['release_date'],
-                    "album_url": album['external_urls']['spotify'],
-                    "cover_image": album['images'][0]['url'] if album['images'] else None
-                })
-            return {"albums": albums}
-        else:
-            return {"error": "No se encontraron álbumes populares."}
-    except Exception as e:
-        return {"error": str(e)}
 
