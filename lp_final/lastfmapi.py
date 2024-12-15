@@ -63,19 +63,26 @@ def get_top_album(artist_name):
     else:
         return None
 
-# Ejemplo de uso
-if __name__ == "__main__":
-    artist_name = "Coldplay"  # Sustituye con el nombre del artista que desees
+def get_global_top_tracks_html(limit=4):
+    """
+    Obtiene las 4 canciones más escuchadas globalmente en Last.fm, junto con imágenes para mostrar en HTML.
+    """
+    params = {
+        "method": "chart.getTopTracks",
+        "api_key": API_KEY,
+        "format": "json",
+        "limit": limit
+    }
+    response = requests.get(BASE_URL, params=params)
+    data = response.json()
     
-    biography, listeners = get_artist_info(artist_name)
-    top_tracks = get_top_tracks(artist_name)
-    top_album = get_top_album(artist_name)
-    
-    print(f"Artista: {artist_name}")
-    print(f"Biografía: {biography}")
-    print(f"Oyentes en Last.fm: {listeners}")
-    print("10 canciones más escuchadas:")
-    if top_tracks:
-        for i, track in enumerate(top_tracks, start=1):
-            print(f"  {i}. {track}")
-    print(f"Álbum más famoso: {top_album}")
+    if 'tracks' in data and data['tracks']['track']:
+        global_top_tracks = []
+        for track in data['tracks']['track']:
+            name = track['name']
+            artist = track['artist']['name']
+            image_url = track['image'][-1]['#text']  # Última imagen suele ser la de mayor tamaño
+            global_top_tracks.append({"name": name, "artist": artist, "image": image_url})
+        return global_top_tracks
+    else:
+        return None
