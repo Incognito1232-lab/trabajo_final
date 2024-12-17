@@ -27,13 +27,4 @@ def get_top_tracks_by_genre(genre_name):
     except Exception as e:
         return {"error": str(e)}
 
-# Ejemplo de uso
-if __name__ == "__main__":
-    genre = "rock"
-    resultado = get_top_tracks_by_genre(genre)
-    if "error" in resultado:
-        print("Error:", resultado["error"])
-    else:
-        print(f"Top canciones del género {resultado['genre']}:")
-        for idx, track in enumerate(resultado['tracks'], 1):
-            print(f"{idx}. {track['name']} - {track['artist']} ({track['url']})")
+
