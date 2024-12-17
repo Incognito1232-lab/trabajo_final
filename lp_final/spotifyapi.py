@@ -7,13 +7,18 @@ client_secret = '5e94387d48cf4f2e9ffe88bb0859cb2b'
 client_credentials_manager = SpotifyClientCredentials(client_id, client_secret)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-# Función para obtener las 10 canciones más populares de un género
+# Función para obtener las 10 canciones más populares de un género, incluyendo las rutas
+
 def get_top_tracks_by_genre(genre_name):
     try:
         resultado_busqueda = sp.search(q='genre:' + genre_name, type='track', limit=10)
         if resultado_busqueda['tracks']['items']:
             canciones = [
-                track['name'] + " - " + track['artists'][0]['name']
+                {
+                    "name": track['name'],
+                    "artist": track['artists'][0]['name'],
+                    "url": track['external_urls']['spotify']
+                }
                 for track in resultado_busqueda['tracks']['items']
             ]
             return {"genre": genre_name, "tracks": canciones}
@@ -22,6 +27,13 @@ def get_top_tracks_by_genre(genre_name):
     except Exception as e:
         return {"error": str(e)}
 
-
-
-
+# Ejemplo de uso
+if __name__ == "__main__":
+    genre = "rock"
+    resultado = get_top_tracks_by_genre(genre)
+    if "error" in resultado:
+        print("Error:", resultado["error"])
+    else:
+        print(f"Top canciones del género {resultado['genre']}:")
+        for idx, track in enumerate(resultado['tracks'], 1):
+            print(f"{idx}. {track['name']} - {track['artist']} ({track['url']})")
